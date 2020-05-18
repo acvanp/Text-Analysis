@@ -12,8 +12,8 @@ library(readr)
 library(dplyr)
 # compare President Trump's word usage in speeches from before and after the Coronavirus Pandemic
 # Source: https://millercenter.org/the-presidency/presidential-speeches
-mystring <- read_file("C:/Users/Lenovo/Demo/TextAnalysis/TrumpBeforeCovid19.txt")
-mystring2 <- read_file("C:/Users/Lenovo/Demo/TextAnalysis/TrumpAfterCovid19.txt")
+mystring <- read_file("C:/Users/Lenovo/TextAnalysis/TrumpBeforeCovid19.txt")
+mystring2 <- read_file("C:/Users/Lenovo/TextAnalysis/TrumpAfterCovid19.txt")
 
 fileName = "C:/Users/Lenovo/Demo/mostcommonwords1000.txt"
 commonwords = read.csv(fileName, header = FALSE)
@@ -23,9 +23,8 @@ docs <- Corpus(VectorSource(c(mystring, mystring2))) %>%
   tm_map(removePunctuation) %>%
   tm_map(removeNumbers) %>%
   tm_map(tolower)  %>%
-  tm_map(removeWords, c( "-", "chapter", "iii", "applause","’ve", "’t", "’ll", "’m", "’d", "’re", "’s",
-                         "xvi", "cleanthes","philo", 
-                         "footnote", "things", "prop", commonwords, stopwords("english"))) %>%
+#  tm_map(removeWords, c("-", "chapter", "iii", "applause", 
+#                        "things", "prop", commonwords, stopwords("english"))) %>%
   tm_map(stripWhitespace) %>%
   tm_map(PlainTextDocument) 
 
