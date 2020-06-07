@@ -136,3 +136,65 @@ ggplot(frequency, aes(x = proportion, y = `Locke`, color = abs(`Locke` - proport
   labs(y = "Locke", x = NULL)
 
 
+
+#################
+########
+# 6/6/2020
+# Perspectives on morality
+
+gutenberg_metadata[which(startsWith(gutenberg_metadata$author, "Kant") ),]
+#5684 Metaphysical Elements of Ethics
+gutenberg_metadata[which(startsWith(gutenberg_metadata$author, "Nietzsche") ),]
+# 4363 Beyond Good and Evil
+gutenberg_metadata[which(startsWith(gutenberg_metadata$author, "Locke, John") ),]
+# 7370 Second Treatise on Government 
+
+kant = gutenberg_download(5684)
+
+nietzsche = gutenberg_download(4363)
+
+locke = gutenberg_download(7370)
+
+tidy_kant = kant %>% 
+  unnest_tokens(word, text) %>%
+  anti_join(stop_words)
+
+
+tidy_nietzsche = nietzsche %>% 
+  unnest_tokens(word, text) %>%
+  anti_join(stop_words)
+
+
+tidy_locke = locke %>% 
+  unnest_tokens(word, text) %>%
+  anti_join(stop_words)
+
+
+library(tidyr)
+
+frequency <- bind_rows(mutate(tidy_kant, author = "Kant"),
+                       mutate(tidy_nietzsche, author = "_Nietzsche_"), 
+                       mutate(tidy_locke, author = "Locke")) %>% 
+  mutate(word = str_extract(word, "[a-z']+")) %>%
+  count(author, word) %>%
+  group_by(author) %>%
+  mutate(proportion = n / sum(n)) %>% 
+  select(-n) %>% 
+  spread(author, proportion) %>% 
+  gather(author, proportion, `Kant`:`_Nietzsche_`)
+
+library(scales)
+
+# expect a warning about rows with missing values being removed
+ggplot(frequency, aes(x = proportion, y = `Locke`, color = abs(`Locke` - proportion))) +
+  geom_abline(color = "gray40", lty = 2) +
+  geom_jitter(alpha = 0.1, size = 2.5, width = 0.3, height = 0.3) +
+  geom_text(aes(label = word), check_overlap = TRUE, vjust = 1.5) +
+  scale_x_log10(labels = percent_format()) +
+  scale_y_log10(labels = percent_format()) +
+  scale_color_gradient(limits = c(0, 0.001), low = "darkslategray4", high = "gray75") +
+  facet_wrap(~author, ncol = 2) +
+  theme(legend.position="none") +
+  labs(y = "Locke", x = NULL)
+
+
