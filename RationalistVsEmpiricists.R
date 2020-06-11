@@ -160,11 +160,15 @@ tidy_kant = kant %>%
   anti_join(stop_words)
 
 # remove non-words
-tidy_kant = tidy_kant[which(! tidy_kant$word %in% c("ii", "xii")),]
+tidy_kant = tidy_kant[
+  which(! tidy_kant$word %in% c("ii", "ix", "xii")),]
   
 tidy_nietzsche = nietzsche %>% 
   unnest_tokens(word, text) %>%
   anti_join(stop_words)
+
+tidy_nietzsche = tidy_nietzsche[
+  which(! tidy_nietzsche$word %in% c("ii", "ix","viii", "xii")),]
 
 
 tidy_locke = locke %>% 
@@ -173,21 +177,21 @@ tidy_locke = locke %>%
 
 library(tidyr)
 
-frequency <- bind_rows(mutate(tidy_kant, author = "Kant"),
-                       mutate(tidy_nietzsche, author = " Nietzsche "), 
-                       mutate(tidy_locke, author = "Locke")) %>% 
+frequency <- bind_rows(mutate(tidy_kant, author = " Rationalist "),
+                       mutate(tidy_nietzsche, author = " Romantic "), 
+                       mutate(tidy_locke, author = " Empiricist ")) %>% 
   mutate(word = str_extract(word, "[a-z']+")) %>%
   count(author, word) %>%
   group_by(author) %>%
   mutate(proportion = n / sum(n)) %>% 
   select(-n) %>% 
   spread(author, proportion) %>% 
-  gather(author, proportion, `Kant`:` Nietzsche `)
+  gather(author, proportion, ` Rationalist `:` Romantic `)
 
 library(scales)
 
 # expect a warning about rows with missing values being removed
-ggplot(frequency, aes(x = proportion, y = `Locke`, color = abs(`Locke` - proportion))) +
+ggplot(frequency, aes(x = proportion, y = ` Empiricist `, color = abs(` Empiricist ` - proportion))) +
   geom_abline(color = "gray40", lty = 2) +
   geom_jitter(alpha = 0.1, size = 2.5, width = 0.3, height = 0.3) +
   geom_text(aes(label = word), check_overlap = TRUE, vjust = 0.5) +
@@ -197,6 +201,6 @@ ggplot(frequency, aes(x = proportion, y = `Locke`, color = abs(`Locke` - proport
   facet_wrap(~author, ncol = 2) +
   theme_bw(base_size=16) + 
   theme(legend.position="none", panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
-  labs(y = "Locke", x = NULL)
+  labs(y = " Empiricist ", x = NULL)
 
 
