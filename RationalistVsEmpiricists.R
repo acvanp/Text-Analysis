@@ -159,7 +159,9 @@ tidy_kant = kant %>%
   unnest_tokens(word, text) %>%
   anti_join(stop_words)
 
-
+# remove non-words
+tidy_kant = tidy_kant[which(! tidy_kant$word %in% c("ii", "xii")),]
+  
 tidy_nietzsche = nietzsche %>% 
   unnest_tokens(word, text) %>%
   anti_join(stop_words)
@@ -169,11 +171,10 @@ tidy_locke = locke %>%
   unnest_tokens(word, text) %>%
   anti_join(stop_words)
 
-
 library(tidyr)
 
 frequency <- bind_rows(mutate(tidy_kant, author = "Kant"),
-                       mutate(tidy_nietzsche, author = "_Nietzsche_"), 
+                       mutate(tidy_nietzsche, author = " Nietzsche "), 
                        mutate(tidy_locke, author = "Locke")) %>% 
   mutate(word = str_extract(word, "[a-z']+")) %>%
   count(author, word) %>%
@@ -181,7 +182,7 @@ frequency <- bind_rows(mutate(tidy_kant, author = "Kant"),
   mutate(proportion = n / sum(n)) %>% 
   select(-n) %>% 
   spread(author, proportion) %>% 
-  gather(author, proportion, `Kant`:`_Nietzsche_`)
+  gather(author, proportion, `Kant`:` Nietzsche `)
 
 library(scales)
 
@@ -189,12 +190,13 @@ library(scales)
 ggplot(frequency, aes(x = proportion, y = `Locke`, color = abs(`Locke` - proportion))) +
   geom_abline(color = "gray40", lty = 2) +
   geom_jitter(alpha = 0.1, size = 2.5, width = 0.3, height = 0.3) +
-  geom_text(aes(label = word), check_overlap = TRUE, vjust = 1.5) +
+  geom_text(aes(label = word), check_overlap = TRUE, vjust = 0.5) +
   scale_x_log10(labels = percent_format()) +
   scale_y_log10(labels = percent_format()) +
   scale_color_gradient(limits = c(0, 0.001), low = "darkslategray4", high = "gray75") +
   facet_wrap(~author, ncol = 2) +
-  theme(legend.position="none") +
+  theme_bw(base_size=16) + 
+  theme(legend.position="none", panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
   labs(y = "Locke", x = NULL)
 
 
